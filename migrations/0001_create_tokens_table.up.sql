@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS tokens (
+    id SERIAL PRIMARY KEY,
+    symbol VARCHAR(50) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    price_usd NUMERIC(18, 8) NOT NULL
+);
