@@ -13,7 +13,8 @@ import (
 const coingeckoAPI = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd"
 
 type TokenService interface {
-	FetchAndStoreTokens() error
+	FetchAndStoreTokens() ([]models.Token, error)
+	GetTokenPriceHistory(tokenID string) ([]models.TokenPriceHistory, error)
 }
 
 type tokenService struct {
@@ -24,18 +25,21 @@ func NewTokenService(tokenRepo repository.TokenRepository) TokenService {
 	return &tokenService{tokenRepo: tokenRepo}
 }
 
-func (s *tokenService) FetchAndStoreTokens() error {
+func (s *tokenService) FetchAndStoreTokens() ([]models.Token, error) {
 	tokens, err := s.fetchTokens()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	// Сохраняем токены через репозиторий
 	if err := s.tokenRepo.InsertTokens(tokens); err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	if err := s.tokenRepo.InsertTokenPriceHistory(tokens); err != nil {
+		return nil, err
+	}
+
+	return tokens, nil
 }
 
 func (s *tokenService) fetchTokens() ([]models.Token, error) {
@@ -56,4 +60,8 @@ func (s *tokenService) fetchTokens() ([]models.Token, error) {
 	}
 
 	return tokens, nil
+}
+
+func (s *tokenService) GetTokenPriceHistory(tokenID string) ([]models.TokenPriceHistory, error) {
+	return s.tokenRepo.GetTokenPriceHistory(tokenID)
 }

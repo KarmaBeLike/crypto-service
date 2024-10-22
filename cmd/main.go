@@ -38,6 +38,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/tokens", tokenHandler.GetAndStoreTokens).Methods(http.MethodGet)
+	r.HandleFunc("/tokens/{token_id}", tokenHandler.GetTokenPriceHistory).Methods(http.MethodGet)
 
 	// Запускаем сервер
 	log.Println("Starting server on :8080")

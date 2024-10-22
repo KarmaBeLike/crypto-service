@@ -42,6 +42,18 @@ func RunMigrations(db *sql.DB) error {
 	if err != nil {
 		return errors.Wrap(err, "migrate")
 	}
+	version, dirty, err := m.Version()
+	if err != nil && err != migrate.ErrNilVersion { // если ошибка не ErrNilVersion (нет миграций)
+		return errors.Wrap(err, "failed to get migration version")
+	}
+
+	if dirty {
+		log.Printf("Dirty migration detected at version %d. Forcing to clean state.\n", version)
+
+		if err := m.Force(int(version)); err != nil {
+			return errors.Wrap(err, "failed to force migration")
+		}
+	}
 
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		return errors.Wrap(err, "failed to apply migrations")
